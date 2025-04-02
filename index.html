@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badminton Poll</title>
+    <style>
+        body {
+            background-color: #f0f8ff;
+            color: #2c3e50;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2980b9;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2980b9;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sign up for Badminton</h1>
+        <div>
+            <button onclick="vote('Monday')">Monday</button>
+            <button onclick="vote('Wednesday')">Wednesday</button>
+            <button onclick="vote('Friday')">Friday</button>
+        </div>
+        <div id="log"></div>
+        <button id="loginButton">Login with Firebase</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Login function
+        document.getElementById('loginButton').onclick = async () => {
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword('user@example.com', 'password');
+                const token = await userCredential.user.getIdToken();
+                localStorage.setItem('token', token);  // Save the token locally
+                alert("Login Successful!");
+            } catch (error) {
+                alert("Error during login: " + error.message);
+            }
+        };
+
+        async function vote(day) {
+            const token = localStorage.getItem('token'); // Get token from local storage
+            const response = await fetch('http://localhost:5000/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: auth.currentUser.email, option: day, token: token })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert(`You signed up for ${day}`);
+            } else {
+                alert(result.message);
+            }
+        }
+    </script>
+</body>
+</html>
